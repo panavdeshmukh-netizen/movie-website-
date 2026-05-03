@@ -1,440 +1,524 @@
-/* ═══════════════════════════════════════════════════════════════
-   FLICKVAULT — app.js
-   ───────────────────────────────────────────────────────────────
-   HOW TO ADD A MOVIE:
-   Copy one block below and paste it at the TOP of the array.
-   Fill in your own title, poster, trailer and download links.
-   The site updates instantly — no HTML/CSS changes needed.
+/* ══════════════════════════════════════════════════
+   CINEVAULT — APP.JS
+   Movie data, UI logic, search, player, my list
+══════════════════════════════════════════════════ */
 
-   FIELDS:
-     title    → Movie name (string)
-     year     → Release year (number)
-     genre    → Category label (string)
-     rating   → e.g. "8.5/10" (string)
-     desc     → Short description (string)
-     poster   → Direct image URL  (use any image host)
-     trailer  → YouTube EMBED URL  (use embed format below)
-                  https://www.youtube.com/embed/VIDEO_ID
-                  Leave "" if no trailer
-     download → Direct download or Google Drive link
-                  Leave "" if no download
-═══════════════════════════════════════════════════════════════ */
+// ── MOVIE DATABASE ──────────────────────────────────
+// Using Picsum for placeholder posters (aspect 2:3 crops)
+// and Unsplash for hero backdrops
 
-// ┌────────────────────────────────────────────────────────────┐
-// │  ★  ADD NEW MOVIES HERE — paste at the top of this array  │
-// └────────────────────────────────────────────────────────────┘
 const movies = [
-
-  // ── 1 ───────────────────────────────────────────────────────
+  /* 0 - Featured Hero */
   {
-    title:    "Inception",
-    year:     2010,
-    genre:    "Sci-Fi / Thriller",
-    rating:   "8.8/10",
-    desc:     "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
-    poster:   "https://picsum.photos/seed/inception/400/600",
-    trailer:  "https://www.youtube.com/embed/YoHD9XEInc0",
-    download: "https://drive.google.com/file/d/EXAMPLE_ID_1/view"
+    id: 1,
+    title: "Dune: Part Two",
+    year: 2024,
+    rating: 8.5,
+    genre: ["Sci-Fi", "Adventure", "Trending"],
+    director: "Denis Villeneuve",
+    cast: "Timothée Chalamet, Zendaya, Rebecca Ferguson",
+    desc: "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family. Facing a choice between the love of his life and the fate of the universe, he must prevent a terrible future only he can foresee.",
+    poster: "https://picsum.photos/seed/dune2/400/600",
+    backdrop: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1600&q=80",
+    duration: "2h 46m",
   },
-
-  // ── 2 ───────────────────────────────────────────────────────
+  /* 1 */
   {
-    title:    "The Dark Knight",
-    year:     2008,
-    genre:    "Action / Crime",
-    rating:   "9.0/10",
-    desc:     "When the Joker wreaks havoc on Gotham, Batman must accept one of the greatest tests of his ability to fight injustice.",
-    poster:   "https://picsum.photos/seed/darkknight2024/400/600",
-    trailer:  "https://www.youtube.com/embed/EXeTwQWrcwY",
-    download: "https://drive.google.com/file/d/EXAMPLE_ID_2/view"
+    id: 2,
+    title: "Oppenheimer",
+    year: 2023,
+    rating: 8.9,
+    genre: ["Drama", "Thriller", "Trending"],
+    director: "Christopher Nolan",
+    cast: "Cillian Murphy, Emily Blunt, Matt Damon",
+    desc: "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb during World War II.",
+    poster: "https://picsum.photos/seed/oppen/400/600",
+    backdrop: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80",
+    duration: "3h 0m",
   },
-
-  // ── 3 ───────────────────────────────────────────────────────
+  /* 2 */
   {
-    title:    "Interstellar",
-    year:     2014,
-    genre:    "Sci-Fi / Drama",
-    rating:   "8.7/10",
-    desc:     "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.",
-    poster:   "https://picsum.photos/seed/interstellar/400/600",
-    trailer:  "https://www.youtube.com/embed/zSWdZVtXT7E",
-    download: "https://drive.google.com/file/d/EXAMPLE_ID_3/view"
+    id: 3,
+    title: "The Dark Knight",
+    year: 2008,
+    rating: 9.0,
+    genre: ["Action", "Crime", "Trending"],
+    director: "Christopher Nolan",
+    cast: "Christian Bale, Heath Ledger, Aaron Eckhart",
+    desc: "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
+    poster: "https://picsum.photos/seed/darkknight/400/600",
+    backdrop: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1600&q=80",
+    duration: "2h 32m",
   },
-
-  // ── 4 ───────────────────────────────────────────────────────
+  /* 3 */
   {
-    title:    "Oppenheimer",
-    year:     2023,
-    genre:    "Drama / History",
-    rating:   "8.9/10",
-    desc:     "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb during WWII.",
-    poster:   "https://picsum.photos/seed/oppenheimer23/400/600",
-    trailer:  "https://www.youtube.com/embed/uYPbbksJxIg",
-    download: "https://drive.google.com/file/d/EXAMPLE_ID_4/view"
+    id: 4,
+    title: "Mad Max: Fury Road",
+    year: 2015,
+    rating: 8.1,
+    genre: ["Action", "Adventure"],
+    director: "George Miller",
+    cast: "Tom Hardy, Charlize Theron, Nicholas Hoult",
+    desc: "In a post-apocalyptic wasteland, a woman rebels against a tyrannical ruler in search of her homeland with the aid of a group of female prisoners, a psychotic worshiper, and a drifter named Max.",
+    poster: "https://picsum.photos/seed/madmax/400/600",
+    backdrop: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1600&q=80",
+    duration: "2h 0m",
   },
-
-  // ── 5 ───────────────────────────────────────────────────────
+  /* 4 */
   {
-    title:    "Dune: Part Two",
-    year:     2024,
-    genre:    "Sci-Fi / Adventure",
-    rating:   "8.5/10",
-    desc:     "Paul Atreides unites with Chani and the Fremen while seeking revenge against those who destroyed his family.",
-    poster:   "https://picsum.photos/seed/dune2part/400/600",
-    trailer:  "https://www.youtube.com/embed/Way9Dexny3w",
-    download: "https://drive.google.com/file/d/EXAMPLE_ID_5/view"
+    id: 5,
+    title: "John Wick",
+    year: 2014,
+    rating: 7.4,
+    genre: ["Action", "Thriller"],
+    director: "Chad Stahelski",
+    cast: "Keanu Reeves, Michael Nyqvist, Alfie Allen",
+    desc: "An ex-hitman comes out of retirement to track down the gangsters that killed his dog and took everything from him.",
+    poster: "https://picsum.photos/seed/johnwick/400/600",
+    backdrop: "https://images.unsplash.com/photo-1596727147705-61a532a659bd?w=1600&q=80",
+    duration: "1h 41m",
   },
-
-  // ── 6 ───────────────────────────────────────────────────────
+  /* 5 */
   {
-    title:    "Mad Max: Fury Road",
-    year:     2015,
-    genre:    "Action / Adventure",
-    rating:   "8.1/10",
-    desc:     "In a post-apocalyptic wasteland, a woman rebels against a tyrannical ruler with the aid of a drifter named Max.",
-    poster:   "https://picsum.photos/seed/madmaxfury/400/600",
-    trailer:  "https://www.youtube.com/embed/hEJnMQG9ev8",
-    download: "https://drive.google.com/file/d/EXAMPLE_ID_6/view"
+    id: 6,
+    title: "Top Gun: Maverick",
+    year: 2022,
+    rating: 8.3,
+    genre: ["Action", "Drama"],
+    director: "Joseph Kosinski",
+    cast: "Tom Cruise, Miles Teller, Jennifer Connelly",
+    desc: "After more than thirty years of service as one of the Navy's top aviators, Pete Mitchell is where he belongs, pushing the envelope as a courageous test pilot.",
+    poster: "https://picsum.photos/seed/topgun/400/600",
+    backdrop: "https://images.unsplash.com/photo-1520437358207-323b43b50729?w=1600&q=80",
+    duration: "2h 11m",
   },
-
-  // ── 7 ───────────────────────────────────────────────────────
+  /* 6 */
   {
-    title:    "Get Out",
-    year:     2017,
-    genre:    "Horror / Thriller",
-    rating:   "7.7/10",
-    desc:     "A young African-American visits his white girlfriend's parents for the weekend, where something sinister awaits.",
-    poster:   "https://picsum.photos/seed/getoutfilm/400/600",
-    trailer:  "https://www.youtube.com/embed/DzfpyUB60YY",
-    download: "https://drive.google.com/file/d/EXAMPLE_ID_7/view"
+    id: 7,
+    title: "The Grand Budapest Hotel",
+    year: 2014,
+    rating: 8.1,
+    genre: ["Comedy", "Adventure"],
+    director: "Wes Anderson",
+    cast: "Ralph Fiennes, Tony Revolori, Saoirse Ronan",
+    desc: "The adventures of Gustave H, a legendary concierge at a famous European hotel between the wars, and Zero Moustafa, the lobby boy who becomes his most trusted friend.",
+    poster: "https://picsum.photos/seed/grandbudapest/400/600",
+    backdrop: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=1600&q=80",
+    duration: "1h 39m",
   },
-
-  // ── 8 ───────────────────────────────────────────────────────
+  /* 7 */
   {
-    title:    "Everything Everywhere All at Once",
-    year:     2022,
-    genre:    "Sci-Fi / Comedy",
-    rating:   "7.8/10",
-    desc:     "An aging Chinese immigrant is swept up in an insane adventure where she alone can save the world by exploring the multiverse.",
-    poster:   "https://picsum.photos/seed/eeaao22/400/600",
-    trailer:  "https://www.youtube.com/embed/wxN1T1uxQ2g",
-    download: "https://drive.google.com/file/d/EXAMPLE_ID_8/view"
+    id: 8,
+    title: "Superbad",
+    year: 2007,
+    rating: 7.6,
+    genre: ["Comedy"],
+    director: "Greg Mottola",
+    cast: "Jonah Hill, Michael Cera, Emma Stone",
+    desc: "Two co-dependent high school seniors are forced to deal with separation anxiety after their plan to stage a final booze-filled party goes awry.",
+    poster: "https://picsum.photos/seed/superbad/400/600",
+    backdrop: "https://images.unsplash.com/photo-1533928298208-27ff66555d8d?w=1600&q=80",
+    duration: "1h 53m",
   },
-
-  // ── 9 ───────────────────────────────────────────────────────
+  /* 8 */
   {
-    title:    "Top Gun: Maverick",
-    year:     2022,
-    genre:    "Action / Drama",
-    rating:   "8.3/10",
-    desc:     "After 30 years, Maverick is still pushing the envelope as a courageous test pilot, and is called to train a new generation.",
-    poster:   "https://picsum.photos/seed/topgunmav/400/600",
-    trailer:  "https://www.youtube.com/embed/qSqVVswa420",
-    download: "https://drive.google.com/file/d/EXAMPLE_ID_9/view"
+    id: 9,
+    title: "Knives Out",
+    year: 2019,
+    rating: 7.9,
+    genre: ["Comedy", "Mystery"],
+    director: "Rian Johnson",
+    cast: "Daniel Craig, Ana de Armas, Chris Evans",
+    desc: "A detective investigates the death of a patriarch of an eccentric, combative family.",
+    poster: "https://picsum.photos/seed/knivesout/400/600",
+    backdrop: "https://images.unsplash.com/photo-1574169208507-84376144848b?w=1600&q=80",
+    duration: "2h 10m",
   },
-
-  // ── 10 ──────────────────────────────────────────────────────
+  /* 9 */
   {
-    title:    "John Wick: Chapter 4",
-    year:     2023,
-    genre:    "Action / Thriller",
-    rating:   "7.7/10",
-    desc:     "John Wick uncovers a path to defeating the High Table, but before he can earn his freedom, he must face a new enemy.",
-    poster:   "https://picsum.photos/seed/johnwick4/400/600",
-    trailer:  "https://www.youtube.com/embed/qEVUtrk8_B4",
-    download: "https://drive.google.com/file/d/EXAMPLE_ID_10/view"
+    id: 10,
+    title: "The Menu",
+    year: 2022,
+    rating: 7.2,
+    genre: ["Comedy", "Horror", "Thriller"],
+    director: "Mark Mylod",
+    cast: "Ralph Fiennes, Anya Taylor-Joy, Nicholas Hoult",
+    desc: "A young couple travels to a remote island to eat at an exclusive restaurant where the chef has prepared a lavish menu, with some shocking surprises.",
+    poster: "https://picsum.photos/seed/themenu/400/600",
+    backdrop: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&q=80",
+    duration: "1h 47m",
   },
-
-  // ── 11 ──────────────────────────────────────────────────────
+  /* 10 */
   {
-    title:    "The Shawshank Redemption",
-    year:     1994,
-    genre:    "Drama",
-    rating:   "9.3/10",
-    desc:     "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
-    poster:   "https://picsum.photos/seed/shawshank/400/600",
-    trailer:  "https://www.youtube.com/embed/6hB3S9bIaco",
-    download: "https://drive.google.com/file/d/EXAMPLE_ID_11/view"
+    id: 11,
+    title: "Hereditary",
+    year: 2018,
+    rating: 7.3,
+    genre: ["Horror", "Drama"],
+    director: "Ari Aster",
+    cast: "Toni Collette, Milly Shapiro, Gabriel Byrne",
+    desc: "When the matriarch of the Graham family passes away, her daughter's family begins to unravel cryptic and increasingly terrifying secrets about their ancestry.",
+    poster: "https://picsum.photos/seed/hereditary/400/600",
+    backdrop: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=1600&q=80",
+    duration: "2h 7m",
   },
-
-  // ── 12 ──────────────────────────────────────────────────────
+  /* 11 */
   {
-    title:    "Parasite",
-    year:     2019,
-    genre:    "Drama / Thriller",
-    rating:   "8.5/10",
-    desc:     "Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Parks and the destitute Kims.",
-    poster:   "https://picsum.photos/seed/parasitefilm/400/600",
-    trailer:  "https://www.youtube.com/embed/5xH0HfJHsaY",
-    download: "https://drive.google.com/file/d/EXAMPLE_ID_12/view"
+    id: 12,
+    title: "Get Out",
+    year: 2017,
+    rating: 7.7,
+    genre: ["Horror", "Thriller"],
+    director: "Jordan Peele",
+    cast: "Daniel Kaluuya, Allison Williams, Bradley Whitford",
+    desc: "A young African-American visits his white girlfriend's parents for the weekend, where his simmering unease about their reception of him eventually reaches a boiling point.",
+    poster: "https://picsum.photos/seed/getout/400/600",
+    backdrop: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1600&q=80",
+    duration: "1h 44m",
   },
-
+  /* 12 */
+  {
+    id: 13,
+    title: "A Quiet Place",
+    year: 2018,
+    rating: 7.5,
+    genre: ["Horror", "Sci-Fi"],
+    director: "John Krasinski",
+    cast: "Emily Blunt, John Krasinski, Millicent Simmonds",
+    desc: "In a post-apocalyptic world, a family is forced to live in near silence while hiding from creatures that hunt by sound.",
+    poster: "https://picsum.photos/seed/quietplace/400/600",
+    backdrop: "https://images.unsplash.com/photo-1535016120720-40c646be5580?w=1600&q=80",
+    duration: "1h 30m",
+  },
+  /* 13 */
+  {
+    id: 14,
+    title: "Midsommar",
+    year: 2019,
+    rating: 7.1,
+    genre: ["Horror", "Drama"],
+    director: "Ari Aster",
+    cast: "Florence Pugh, Jack Reynor, Vilhelm Blomgren",
+    desc: "A couple travels to Northern Europe to visit a rural hometown's fabled Swedish midsummer festival. What begins as an idyllic retreat quickly devolves into an increasingly sinister competition.",
+    poster: "https://picsum.photos/seed/midsommar/400/600",
+    backdrop: "https://images.unsplash.com/photo-1470219556762-1771e7f9427d?w=1600&q=80",
+    duration: "2h 28m",
+  },
+  /* 14 */
+  {
+    id: 15,
+    title: "Everything Everywhere",
+    year: 2022,
+    rating: 7.8,
+    genre: ["Trending", "Sci-Fi", "Comedy"],
+    director: "Daniel Kwan, Daniel Scheinert",
+    cast: "Michelle Yeoh, Ke Huy Quan, Jamie Lee Curtis",
+    desc: "An aging Chinese immigrant is swept up in an insane adventure, where she alone can save the world by exploring other universes and connecting with the lives she could have led.",
+    poster: "https://picsum.photos/seed/eeaao/400/600",
+    backdrop: "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=1600&q=80",
+    duration: "2h 19m",
+  },
 ];
-/* ─────────────────────────────────────────────────────────────
-   END OF MOVIE ARRAY — add your movies above this line
-───────────────────────────────────────────────────────────── */
 
+// ── STATE ────────────────────────────────────────────
+let currentMovie = null;  // Movie open in modal/player
+let myList = JSON.parse(localStorage.getItem('cinevault_list') || '[]');
 
-// ═══════════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════════
-let currentQuery   = "";   // active search string
-let activeMovieIdx = -1;   // index of open modal
-
-
-// ═══════════════════════════════════════════════════
-//  INIT — runs when the page loads
-// ═══════════════════════════════════════════════════
-document.addEventListener("DOMContentLoaded", () => {
-  renderMovies(movies);
-  updateStats(movies.length);
+// ── INIT ─────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  // Loader
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('fade-out');
+    setTimeout(() => {
+      document.getElementById('loader').style.display = 'none';
+      initHero();
+      renderGrids();
+      updateBadge();
+    }, 500);
+  }, 1800);
 });
 
-
-// ═══════════════════════════════════════════════════
-//  RENDER FUNCTIONS
-// ═══════════════════════════════════════════════════
-
-/**
- * Renders an array of movies into the grid.
- * @param {Array} list - movies to display
- */
-function renderMovies(list) {
-  const grid       = document.getElementById("movieGrid");
-  const emptyState = document.getElementById("emptyState");
-
-  // Clear existing cards
-  grid.innerHTML = "";
-
-  if (list.length === 0) {
-    grid.style.display    = "none";
-    emptyState.style.display = "flex";
-    return;
-  }
-
-  grid.style.display    = "grid";
-  emptyState.style.display = "none";
-
-  // Build a card for each movie
-  list.forEach((movie, index) => {
-    const card = createCard(movie, index);
-    // Stagger the animation
-    card.style.animationDelay = `${index * 0.04}s`;
-    grid.appendChild(card);
-  });
+// ── HERO ─────────────────────────────────────────────
+function initHero() {
+  const m = movies[0];
+  document.getElementById('heroBg').style.backgroundImage = `url(${m.backdrop})`;
+  document.getElementById('heroTitle').textContent = m.title;
+  document.getElementById('heroDesc').textContent = m.desc;
 }
 
-/**
- * Creates a single movie card DOM element.
- * @param {Object} movie
- * @param {number} index - position in the ORIGINAL movies array
- */
-function createCard(movie, index) {
-  // Find real index in the full movies array (needed for modal)
-  const realIndex = movies.indexOf(movie);
+// Rotate hero every 8s (optional flair)
+let heroIndex = 0;
+setInterval(() => {
+  const candidates = movies.filter(m => m.genre.includes('Trending'));
+  heroIndex = (heroIndex + 1) % candidates.length;
+  const m = candidates[heroIndex];
+  const bg = document.getElementById('heroBg');
+  bg.style.opacity = 0;
+  setTimeout(() => {
+    bg.style.backgroundImage = `url(${m.backdrop})`;
+    bg.style.transition = 'opacity 1s ease';
+    bg.style.opacity = 1;
+    document.getElementById('heroTitle').textContent = m.title;
+    document.getElementById('heroDesc').textContent = m.desc;
+  }, 500);
+}, 8000);
 
-  const card = document.createElement("div");
-  card.className  = "movie-card";
-  card.title      = movie.title;
-  card.setAttribute("role", "button");
-  card.setAttribute("tabindex", "0");
+// ── RENDER GRIDS ─────────────────────────────────────
+function renderGrids() {
+  renderGrid('trendingGrid', movies.filter(m => m.genre.includes('Trending')));
+  renderGrid('actionGrid',   movies.filter(m => m.genre.includes('Action')));
+  renderGrid('comedyGrid',   movies.filter(m => m.genre.includes('Comedy')));
+  renderGrid('horrorGrid',   movies.filter(m => m.genre.includes('Horror')));
+}
 
-  card.innerHTML = `
-    <img
-      class="card-img"
-      src="${movie.poster}"
-      alt="${movie.title} poster"
-      loading="lazy"
-      onerror="this.src='https://picsum.photos/seed/${encodeURIComponent(movie.title)}/400/600'"
-    />
-    <div class="card-overlay">
-      <div class="card-title">${movie.title}</div>
-      <div class="card-genre">${movie.genre} · ${movie.year}</div>
-    </div>
-    <div class="card-cta">
-      <div class="cta-play">
-        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+function renderGrid(containerId, list) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = list.map((m, i) => movieCard(m, i)).join('');
+}
+
+// ── CARD HTML ─────────────────────────────────────────
+function movieCard(movie, delay = 0) {
+  return `
+    <div class="movie-card" style="animation-delay:${delay * 0.05}s"
+         onclick="openModal(getMovieById(${movie.id}))">
+      <img src="${movie.poster}" alt="${movie.title}" loading="lazy"
+           onerror="this.src='https://picsum.photos/seed/${movie.id}extra/400/600'" />
+      <div class="card-strip">
+        <div class="strip-title">${movie.title}</div>
+        <div class="strip-rating">⭐ ${movie.rating}</div>
       </div>
-      <span class="cta-label">Watch Trailer</span>
+      <div class="card-overlay">
+        <div class="card-title">${movie.title}</div>
+        <div class="card-meta">
+          <span class="card-rating">⭐ ${movie.rating}</span>
+          <span>${movie.year}</span>
+          <span>${movie.duration}</span>
+        </div>
+        <div class="card-actions">
+          <button class="card-btn play" onclick="event.stopPropagation(); openPlayer(getMovieById(${movie.id}))">▶ Play</button>
+          <button class="card-btn info" onclick="event.stopPropagation(); openModal(getMovieById(${movie.id}))">Info</button>
+        </div>
+      </div>
     </div>
   `;
-
-  // Click & keyboard handlers
-  card.addEventListener("click",   () => openModal(realIndex));
-  card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") openModal(realIndex); });
-
-  return card;
 }
 
-/**
- * Updates the movie count stat in the hero and navbar.
- */
-function updateStats(count) {
-  document.getElementById("statCount").textContent = count;
-  document.getElementById("movieCount").innerHTML  =
-    `<strong>${count}</strong> movie${count !== 1 ? "s" : ""}`;
+function getMovieById(id) {
+  return movies.find(m => m.id === id);
 }
 
+// ── PAGE SWITCHING ────────────────────────────────────
+function showPage(page) {
+  document.getElementById('homePage').classList.toggle('hidden', page !== 'home');
+  document.getElementById('resultsPage').classList.toggle('hidden', page !== 'results');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-// ═══════════════════════════════════════════════════
-//  SEARCH
-// ═══════════════════════════════════════════════════
+// ── CATEGORY FILTER ───────────────────────────────────
+function filterCategory(cat) {
+  const filtered = cat === 'Series'
+    ? movies.filter(m => m.genre.includes('Drama') || m.genre.includes('Series'))
+    : movies.filter(m => m.genre.includes(cat));
 
-/**
- * Called on every keystroke in the search input.
- * @param {string} query
- */
+  document.getElementById('resultsTitle').textContent = cat + ' Films';
+  renderGrid('resultsGrid', filtered.length ? filtered : movies);
+  showPage('results');
+}
+
+// ── SEARCH ────────────────────────────────────────────
 function handleSearch(query) {
-  currentQuery = query.trim().toLowerCase();
-
-  const clearBtn  = document.getElementById("clearBtn");
-  const resultsBar = document.getElementById("resultsBar");
-
-  // Show/hide clear button
-  clearBtn.classList.toggle("visible", currentQuery.length > 0);
-
-  if (currentQuery === "") {
-    // Reset to full list
-    resultsBar.style.display = "none";
-    renderMovies(movies);
-    updateStats(movies.length);
+  query = query.trim().toLowerCase();
+  if (!query) {
+    if (document.getElementById('resultsPage').classList.contains('hidden') === false) {
+      showPage('home');
+    }
     return;
   }
-
-  // Filter movies — match title, genre, year, or desc
-  const filtered = movies.filter((m) =>
-    m.title.toLowerCase().includes(currentQuery) ||
-    m.genre.toLowerCase().includes(currentQuery) ||
-    String(m.year).includes(currentQuery) ||
-    m.desc.toLowerCase().includes(currentQuery)
+  const results = movies.filter(m =>
+    m.title.toLowerCase().includes(query) ||
+    m.genre.some(g => g.toLowerCase().includes(query)) ||
+    m.director.toLowerCase().includes(query) ||
+    m.cast.toLowerCase().includes(query)
   );
-
-  // Show results bar
-  resultsBar.style.display = "flex";
-  document.getElementById("resultsLabel").innerHTML =
-    `<strong>${filtered.length}</strong> result${filtered.length !== 1 ? "s" : ""} for "<strong>${escapeHtml(query.trim())}</strong>"`;
-
-  renderMovies(filtered);
-  updateStats(filtered.length);
+  document.getElementById('resultsTitle').textContent = `Search: "${query}" (${results.length} results)`;
+  renderGrid('resultsGrid', results.length ? results : []);
+  if (!results.length) {
+    document.getElementById('resultsGrid').innerHTML = `<p style="grid-column:1/-1;color:var(--text-muted);padding:40px 0;text-align:center;font-size:16px;">No movies found for "<strong>${query}</strong>"</p>`;
+  }
+  showPage('results');
 }
 
-/**
- * Clears the search and restores full grid.
- */
-function clearSearch() {
-  const input = document.getElementById("searchInput");
-  input.value = "";
-  input.focus();
-  handleSearch("");
+function toggleSearch() {
+  const wrap = document.getElementById('searchWrap');
+  wrap.classList.toggle('open');
+  if (wrap.classList.contains('open')) {
+    document.getElementById('searchInput').focus();
+  } else {
+    document.getElementById('searchInput').value = '';
+    showPage('home');
+  }
 }
 
+// ── MY LIST ───────────────────────────────────────────
+function showMyList() {
+  const listMovies = movies.filter(m => myList.includes(m.id));
+  document.getElementById('resultsTitle').textContent = `My List (${listMovies.length})`;
+  if (listMovies.length === 0) {
+    document.getElementById('resultsGrid').innerHTML = `<p style="grid-column:1/-1;color:var(--text-muted);padding:40px 0;text-align:center;font-size:16px;">Your list is empty. Add movies by clicking "+ My List".</p>`;
+  } else {
+    renderGrid('resultsGrid', listMovies);
+  }
+  showPage('results');
+}
 
-// ═══════════════════════════════════════════════════
-//  MODAL — open / close
-// ═══════════════════════════════════════════════════
+function toggleList() {
+  if (!currentMovie) return;
+  const id = currentMovie.id;
+  const btn = document.getElementById('modalListBtn');
 
-/**
- * Opens the movie modal for the given movies[] index.
- * @param {number} index
- */
-function openModal(index) {
-  const movie    = movies[index];
+  if (myList.includes(id)) {
+    myList = myList.filter(x => x !== id);
+    btn.classList.remove('added');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> My List`;
+    showToast(`"${currentMovie.title}" removed from My List`);
+  } else {
+    myList.push(id);
+    btn.classList.add('added');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> In My List`;
+    showToast(`"${currentMovie.title}" added to My List ✓`);
+  }
+
+  localStorage.setItem('cinevault_list', JSON.stringify(myList));
+  updateBadge();
+}
+
+function updateBadge() {
+  document.getElementById('myListCount').textContent = myList.length;
+}
+
+// ── MODAL ─────────────────────────────────────────────
+function openModal(movie) {
   if (!movie) return;
-  activeMovieIdx = index;
+  currentMovie = movie;
 
-  const modal    = document.getElementById("modal");
-  const backdrop = document.getElementById("modalBackdrop");
+  document.getElementById('modalPoster').style.backgroundImage = `url(${movie.poster})`;
+  document.getElementById('modalTag').textContent = movie.genre[0];
+  document.getElementById('modalTitle').textContent = movie.title;
+  document.getElementById('modalDesc').textContent = movie.desc;
+  document.getElementById('modalCast').textContent = movie.cast;
+  document.getElementById('modalMeta').innerHTML = `
+    <span>${movie.year}</span>
+    <span>⭐ ${movie.rating}</span>
+    <span>${movie.duration}</span>
+    <span>Dir. ${movie.director}</span>
+  `;
 
-  // ── Populate fields ──────────────────────────────
-  document.getElementById("modalTitle").textContent = movie.title;
+  // Play button in modal
+  const playBtn = document.getElementById('modalPlayBtn');
+  playBtn.onclick = () => { closeModal(); openPlayer(movie); };
 
-  // Meta chips
-  document.getElementById("modalMeta").innerHTML = [
-    movie.year   ? `<span>${movie.year}</span>`   : "",
-    movie.genre  ? `<span>${movie.genre}</span>`  : "",
-    movie.rating ? `<span>⭐ ${movie.rating}</span>` : "",
-  ].join("");
-
-  document.getElementById("modalDesc").textContent =
-    movie.desc || "No description available.";
-
-  // ── Trailer ──────────────────────────────────────
-  const videoWrap   = document.getElementById("modalVideo");
-  const placeholder = document.getElementById("videoPlaceholder");
-
-  if (movie.trailer && movie.trailer.trim() !== "") {
-    // Build safe embed URL (auto-play, muted so browsers allow it)
-    const embedUrl = movie.trailer.includes("?")
-      ? movie.trailer + "&autoplay=1&mute=1&rel=0"
-      : movie.trailer + "?autoplay=1&mute=1&rel=0";
-
-    videoWrap.innerHTML = `
-      <iframe
-        src="${embedUrl}"
-        title="${escapeHtml(movie.title)} trailer"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen
-      ></iframe>`;
-    videoWrap.style.display    = "block";
-    placeholder.style.display  = "none";
+  // My List button state
+  const listBtn = document.getElementById('modalListBtn');
+  if (myList.includes(movie.id)) {
+    listBtn.classList.add('added');
+    listBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> In My List`;
   } else {
-    // No trailer — show placeholder
-    videoWrap.innerHTML        = "";
-    videoWrap.style.display    = "none";
-    placeholder.style.display  = "flex";
+    listBtn.classList.remove('added');
+    listBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> My List`;
   }
 
-  // ── Download button ───────────────────────────────
-  const dlBtn = document.getElementById("downloadBtn");
-  if (movie.download && movie.download.trim() !== "") {
-    dlBtn.href = movie.download;
-    dlBtn.classList.remove("disabled");
-    dlBtn.setAttribute("aria-disabled", "false");
-  } else {
-    dlBtn.href = "#";
-    dlBtn.classList.add("disabled");
-    dlBtn.setAttribute("aria-disabled", "true");
-  }
-
-  // ── Animate in ───────────────────────────────────
-  backdrop.classList.add("active");
-  modal.classList.add("active");
-  document.body.style.overflow = "hidden";
+  document.getElementById('movieModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
 }
 
-/**
- * Closes the modal and stops the trailer video.
- */
 function closeModal() {
-  const modal    = document.getElementById("modal");
-  const backdrop = document.getElementById("modalBackdrop");
-
-  // Stop video by clearing iframe src
-  document.getElementById("modalVideo").innerHTML = "";
-
-  modal.classList.remove("active");
-  backdrop.classList.remove("active");
-  document.body.style.overflow = "";
-  activeMovieIdx = -1;
+  document.getElementById('movieModal').classList.add('hidden');
+  document.body.style.overflow = '';
 }
 
-// Close modal on Escape key
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && activeMovieIdx !== -1) closeModal();
+// ── PLAYER ────────────────────────────────────────────
+// Sample videos from Google's public CDN
+const sampleVideos = [
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
+];
+
+function openPlayer(movie) {
+  if (!movie) return;
+  currentMovie = movie;
+
+  document.getElementById('playerTitle').textContent = movie.title;
+  document.getElementById('playerMeta').textContent =
+    `${movie.year} · ${movie.duration} · Dir. ${movie.director} · ⭐ ${movie.rating}`;
+
+  // Assign a sample video (rotate by movie id)
+  const video = document.getElementById('videoPlayer');
+  const src = sampleVideos[movie.id % sampleVideos.length];
+  video.src = src;
+  video.load();
+
+  document.getElementById('playerModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePlayer() {
+  const video = document.getElementById('videoPlayer');
+  video.pause();
+  video.src = '';
+  document.getElementById('playerModal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+// ── TOAST ─────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  // Force reflow
+  void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => t.classList.add('hidden'), 300);
+  }, 2600);
+}
+
+// ── NAV HELPERS ───────────────────────────────────────
+function setActive(el) {
+  document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleMenu() {
+  document.getElementById('navLinks').classList.toggle('open');
+}
+
+// Close mobile menu on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#navbar')) {
+    document.getElementById('navLinks').classList.remove('open');
+  }
 });
 
+// Close modals on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeModal();
+    closePlayer();
+  }
+});
 
-// ═══════════════════════════════════════════════════
-//  UTILITY
-// ═══════════════════════════════════════════════════
-
-/**
- * Escapes HTML special chars to prevent XSS in innerHTML.
- */
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+// Navbar shadow on scroll
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  if (window.scrollY > 40) {
+    nav.style.boxShadow = '0 4px 24px rgba(0,0,0,0.5)';
+  } else {
+    nav.style.boxShadow = 'none';
+  }
+});
